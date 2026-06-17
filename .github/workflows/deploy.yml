@@ -25,5 +25,5 @@ jobs:
             -X PUT \
             "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT_ID }}/workers/scripts/proxy" \
             -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
-            -F 'metadata={"main_module":"_worker.js"};type=application/json' \
-            -F 'file=@_worker.js;type=application/javascript'
+            -H "Content-Type: application/javascript" \
+            --data-binary "@_worker.js"
