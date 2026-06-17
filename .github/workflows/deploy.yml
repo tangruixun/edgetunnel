@@ -25,4 +25,4 @@ jobs:
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           # 关键指令：--no-bundle
           # 明确告诉 CF：不要打包！不要压缩！把我的 _worker.js 原封不动地贴上去！
-          command: deploy --no-bundle
+          command: deploy --name proxy --no-bundle
