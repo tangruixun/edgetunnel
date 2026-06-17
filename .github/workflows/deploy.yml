@@ -1,30 +1,28 @@
-name: Deploy Worker
-
-permissions:
-  contents: read
+name: Auto Deploy Raw Worker
 
 on:
+  # 监听原项目自带的 sync.yml 工作流，当上游同步完成后，自动触发本部署
   workflow_run:
     workflows: ["Upstream Sync"]
     types:
       - completed
-
+  # 允许你手动在网页点击运行
   workflow_dispatch:
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
-
+    # 确保只有在上游同步成功时，才执行代码上传
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: Deploy _worker.js to Cloudflare
-        run: |
-          curl --fail-with-body -v \
-            -X PUT \
-            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT_ID }}/workers/scripts/proxy" \
-            -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
-            -H "Content-Type: application/javascript" \
-            -H "CF-Worker-Compatibility-Date: 2024-01-01" \
-            --data-binary "@_worker.js"
+      - name: Raw Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          # 关键指令：--no-bundle
+          # 明确告诉 CF：不要打包！不要压缩！把我的 _worker.js 原封不动地贴上去！
+          command: deploy --no-bundle
