@@ -21,9 +21,10 @@ jobs:
 
       - name: Deploy _worker.js to Cloudflare
         run: |
-          curl --fail \
+          curl --fail-with-body -v \
             -X PUT \
             "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CF_ACCOUNT_ID }}/workers/scripts/proxy" \
             -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
             -H "Content-Type: application/javascript" \
+            -H "CF-Worker-Compatibility-Date: 2024-01-01" \
             --data-binary "@_worker.js"
